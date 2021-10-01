@@ -112,6 +112,14 @@ function renewcert() {
         rm /tmp/$certfilebasename.crt
         return 1
     fi
+
+    # For reasons I cannot explain, letsencrypt sometimes apppends some extra expired CA certs. Remove these.
+    csplit -s -z -f /tmp/$certfilebasename.crt- /tmp/$certfilebasename.crt '/-----BEGIN CERTIFICATE-----/' '{*}'
+    if [ -f /tmp/$certfilebasename.crt-00 ]; then
+        mv /tmp/$certfilebasename.crt-00 /tmp/$certfilebasename.crt
+        rm /tmp/$certfilebasename.crt-*
+    fi
+
     mv /tmp/$certfilebasename.crt /etc/ssl/certs/$certfilebasename.crt
     rm -fr $wwwroot/.well-known/
     echo "created /etc/ssl/certs/$certfilebasename.crt"
